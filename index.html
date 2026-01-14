@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome</title>
+
+<link id="favicon" rel="icon" type="image/x-icon">
+
+<style>
+:root {
+    --neon: #00ffcc;
+    --bg: #050707;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: #fff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow: hidden;
+}
+
+/* Matrix canvas */
+canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* Pages */
+.page {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 1;
+}
+.page.active { display: flex; }
+
+/* HOME */
+#home {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+h1 {
+    font-size: clamp(36px, 8vw, 64px);
+    letter-spacing: 4px;
+    margin-bottom: 28px;
+    text-shadow: 0 0 20px var(--neon);
+}
+
+/* Search bar */
+.search {
+    display: flex;
+    width: min(520px, 100%);
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(12px);
+    border-radius: 999px;
+    box-shadow: 0 0 30px rgba(0,255,204,.45);
+    overflow: hidden;
+}
+
+.search input {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 16px;
+}
+
+.search button {
+    padding: 16px 26px;
+    border: none;
+    background: var(--neon);
+    color: #000;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 0 18px var(--neon);
+}
+
+/* Settings button */
+.settings-btn {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    font-size: 20px;
+    cursor: pointer;
+    text-shadow: 0 0 12px var(--neon);
+}
+
+/* RESULTS */
+#results {
+    flex-direction: column;
+}
+
+.top-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(10px);
+}
+
+.top-bar button {
+    border: 1px solid var(--neon);
+    background: none;
+    color: var(--neon);
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+    background: #000;
+}
+
+/* SETTINGS */
+#settings {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.settings-box {
+    width: min(360px, 100%);
+    padding: 26px;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(14px);
+    border-radius: 22px;
+    box-shadow: 0 0 40px rgba(0,255,204,.45);
+}
+
+.settings-box h2 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    text-shadow: 0 0 10px var(--neon);
+}
+
+.settings-box label {
+    font-size: 13px;
+    opacity: .85;
+}
+
+.settings-box input {
+    width: 100%;
+    margin: 8px 0 16px;
+    padding: 12px;
+    background: rgba(0,0,0,.75);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    box-shadow: inset 0 0 10px rgba(0,255,204,.3);
+}
+
+.back {
+    background: none;
+    border: none;
+    color: var(--neon);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+    .search button {
+        padding: 16px 20px;
+    }
+    .top-bar {
+        flex-wrap: wrap;
+    }
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<!-- HOME -->
+<div id="home" class="page active">
+    <h1>WELCOME</h1>
+
+    <div class="search">
+        <input id="query" placeholder="type query…">
+        <button onclick="search()">STEALTH</button>
+    </div>
+
+    <div class="settings-btn" onclick="openSettings()">⚙</div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="page">
+    <div class="top-bar">
+        <button onclick="goHome()">Home</button>
+        <button onclick="openSettings()">Settings</button>
+    </div>
+    <iframe id="frame"></iframe>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="page">
+    <div class="settings-box">
+        <h2>Settings</h2>
+
+        <label>Tab Title</label>
+        <input oninput="document.title=this.value">
+
+        <label>Favicon (data:image/x-icon;)</label>
+        <input oninput="favicon.href=this.value">
+
+        <button class="back" onclick="goHome()">← Back</button>
+    </div>
+</div>
+
+<script>
+/* Page switching */
+function show(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+function goHome() { show('home'); }
+function openSettings() { show('settings'); }
+
+/* SEARCH – Ultraviolet correct format */
+function search() {
+    const q = query.value.trim();
+    if (!q) return;
+
+    const target = "https://www.google.com/search?q=" + encodeURIComponent(q);
+
+    frame.src =
+        "https://admin.proxy.hydrovolter.com/ultraviolet/#" +
+        encodeURIComponent(target);
+
+    show('results');
+}
+
+/* Matrix background (mobile-safe speed) */
+const c = document.getElementById("matrix");
+const ctx = c.getContext("2d");
+
+function resize() {
+    c.width = innerWidth;
+    c.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+const chars = "01アカサタナハマヤラワ";
+const size = 16;
+let cols = Math.floor(c.width / size);
+let drops = Array(cols).fill(1);
+
+function draw() {
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    ctx.fillStyle = "#00ffcc";
+    ctx.font = size + "px monospace";
+
+    drops.forEach((y, i) => {
+        ctx.fillText(chars[Math.random() * chars.length | 0], i * size, y * size);
+        if (y * size > c.height && Math.random() > 0.98) drops[i] = 0;
+        drops[i]++;
+    });
+}
+setInterval(draw, 45);
+</script>
+
+</body>
+</html>
